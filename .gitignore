@@ -42,3 +42,7 @@ Thumbs.db
 
 # Output and generated content
 output/
+
+# Local project notes
+progress.md
+project_context.md

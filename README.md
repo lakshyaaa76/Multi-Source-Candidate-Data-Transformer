@@ -123,21 +123,12 @@ python -m transformer.cli --dir samples/ --config configs/example_custom_config.
 > - **Alice Nguyen** (`alice.nguyen.dev@example.com`) — appears only in the resume PDF and recruiter notes; no CSV/ATS row. She still gets a valid canonical record, just with lower `overall_confidence` (0.622 vs Jane Doe's 0.882).
 > - **Null fields** — two candidates have `full_name: null` (CSV row 5 with no name, and the ATS entry with empty `candidate_name`). The pipeline records what it can rather than dropping the whole record.
 
----
-
-### Scenario 5 (optional) — Jane Doe deep-dive with full provenance
-
-**What this shows:** The default config's full output for a single well-covered candidate — the provenance trail, per-field confidence, and skill canonicalization (ATS sent `"postgres"`, output is `"PostgreSQL"`).
-
-```powershell
-python -m transformer.cli --files samples/recruiter_export.csv samples/ats_blob.json samples/resume_jane_doe.pdf samples/recruiter_notes_jane_doe.txt
-```
-
-> **Point to in `output` (or scroll the terminal):** The `provenance` array on Jane Doe's record shows each field, which source contributed it, the extraction method (`direct`, `regex`, `heuristic`, `merged`), and a per-field confidence score. This is the full audit trail the system maintains even when aggregating across four different source types.
 
 
 
----
+
+
+
 
 ## Running the Pipeline
 
