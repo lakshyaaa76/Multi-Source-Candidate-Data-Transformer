@@ -276,25 +276,127 @@
 ---
 
 ## Phase 6 — Internal validation
-**Status: Not Started**
-- `validate.py: validate_canonical` — schema for the internal `CanonicalRecord`.
+**Status: Completed**
+- Implemented `src/transformer/validate.py` with `validate_canonical()`, which runs
+  two verification passes against every `CanonicalRecord` produced by the merge engine:
 
-**Files expected:** `src/transformer/validate.py` (partial).
+  **Pass 1 — JSON schema validation** (via `jsonschema`):
+  - Enforces structural correctness of the full `CanonicalRecord.to_dict()` output:
+    correct types on every field (`candidate_id` is a non-empty string, `emails`/
+    `phones`/etc. are arrays, all numeric fields are numbers, etc.).
+  - `candidate_id` must be a non-empty string (`minLength: 1`).
+  - `overall_confidence` constrained to `[0.0, 1.0]` by the schema.
+  - Every `Skill.confidence` and `Provenance.confidence` similarly constrained to
+    `[0.0, 1.0]`.
+  - `Provenance.method` validated against the known enum of allowed extraction
+    methods (`direct`, `regex`, `heuristic`, `merged`, `failed_normalize`),
+    matching `ExtractionMethod` in `models.py` — any future method added to one
+    must be added to the other.
+  - Sub-schemas defined under `definitions` and referenced via `$ref`, avoiding
+    repetition and making each sub-structure independently readable.
+
+  **Pass 2 — Semantic sanity checks** (things JSON schema alone can't express):
+  - `overall_confidence` range re-checked explicitly so the error message names
+    the field directly (rather than requiring the caller to decode jsonschema output).
+  - **Orphan provenance check**: every `Provenance` entry's `field` prefix
+    (the part before any `[`) must correspond to a real top-level field on
+    `CanonicalRecord`. A typo in `merge.py` like `Provenance(field="skilz[...]")`
+    would silently produce unreachable provenance; this check surfaces it immediately
+    as a `CanonicalValidationError` so it's caught at pipeline time, not later during
+    debugging. Known valid field prefixes are maintained in the module-level
+    `_CANONICAL_FIELD_PREFIXES` frozenset.
+
+- Added two typed exception classes:
+  - `CanonicalValidationError(candidate_id, reason)` — raised by `validate_canonical`;
+    carries `candidate_id` and human-readable `reason` as attributes so the pipeline
+    (Phase 8) can log it per-candidate without exposing raw jsonschema internals.
+  - `ProjectionValidationError(candidate_id, reason)` — defined here for completeness
+    (Phase 7 will raise it), so Phase 8 can import and handle both from one location.
+
+- `validate_projection()` left as a documented stub (raises `NotImplementedError`)
+  pointing to Phase 7 for implementation, keeping the module importable and the
+  future Phase 7 interface defined without blocking anything.
+
+- Smoke-tested against the full Phase 2–5 pipeline output:
+  - All 7 `CanonicalRecord`s produced from the sample fixtures passed
+    `validate_canonical` cleanly (covering Jane Doe, John Smith, Alice Nguyen,
+    the two separate Bob Lee records, and the two unknown-identity records).
+  - Error-detection verified for 5 distinct failure modes: empty `candidate_id`,
+    `overall_confidence > 1.0`, skill `confidence > 1.0`, orphan provenance field
+    prefix (`"skilz"` instead of `"skills"`), and invalid provenance method enum
+    value (`"guessed"`).
+  - A valid minimal record confirmed to pass with no exception.
+
+**Files modified:** `src/transformer/validate.py` (overwriting the Phase 1 stub).
+
+**Implementation notes / deviations:**
+- No deviations from the design (§15). All behaviours described there are implemented.
+- The `→` Unicode arrow in error-message path strings was replaced with plain ASCII
+  `>` to avoid `cp1252` encoding errors when printing on Windows consoles —
+  cosmetic-only change, does not affect error content or structure.
+- `Optional` import from `typing` is present in the module (carried forward from stub)
+  but not used in the final implementation; left in to avoid a noisy one-line diff;
+  no functional impact.
 
 ---
 
 ## Phase 7 — Projection engine + output validation
-**Status: Not Started**
-- `projection.py`: config parsing, `path`/`from` resolution (incl. list-projection
-  `skills[].name`), per-field `normalize` override, `on_missing` handling.
-- `validate.py: validate_projection` — builds JSON-schema from `OutputConfig`, validates
-  projected output.
-- `configs/default_config.json`, `configs/example_custom_config.json`.
-- Unit tests: field selection, renaming, missing-field policies (`null`/`omit`/`error`),
-  schema validation failure surfaced cleanly.
+**Status: Completed**
 
-**Files expected:** `src/transformer/projection.py`, rest of `validate.py`,
-`configs/*.json`, `tests/test_projection.py`.
+### `projection.py`
+- Implemented `project_record(record, config) -> dict` and `project_all(records, config) -> (list[dict], list[ProjectionValidationError])`.
+- **Path resolution** (`_tokenize` + `_apply_tokens`): tokenizes any `from`/`path` string into a sequence of typed access operations and walks the canonical dict:
+  - Plain key: `"full_name"` → `data["full_name"]`
+  - List index: `"emails[0]"` → `data["emails"][0]`
+  - List wildcard / projection: `"skills[].name"` → `[s["name"] for s in data["skills"]]`
+  - Nested key: `"location.city"` → `data["location"]["city"]`
+  - These can be composed, e.g. `"experience[0].company"`.
+- **`on_missing` policy** applied field-by-field:
+  - `"null"` — emit `{field: None}` for missing/null values.
+  - `"omit"` — drop the key from the output dict entirely.
+  - `"error"` — raise `ProjectionValidationError(candidate_id, reason)`; caught by the pipeline per-candidate, not per-batch.
+- **`normalize` override** (`_normalize_scalar` + `_apply_normalize`): dispatches to the shared `normalize.py` functions (same implementation as merge.py uses — no drift). Supported directives: `"E164"` → `normalize_phone`, `"canonical"` → `normalize_skill`, `"YYYY-MM"` / `"date"` → `normalize_date`. Applied element-wise for list-projected values. Unknown directives pass through unchanged.
+- **`include_confidence`** — appends `overall_confidence` (from `record.overall_confidence`) to every projected dict.
+- **`include_provenance`** — appends `provenance` (full serialized provenance list) to every projected dict.
+- **`load_config(path)`** — loads an `OutputConfig` from a JSON file, raising `FileNotFoundError` / `ValueError` on missing/malformed files.
+- `project_all` returns `(results, errors)` so the pipeline can collect per-record `ProjectionValidationError`s without aborting the batch.
+
+### `validate.py: validate_projection`
+- Replaced the Phase 6 stub with a full implementation.
+- **`_type_str_to_schema(type_str, on_missing)`** converts FieldSpec type strings to JSON Schema fragments:
+  - Primitive types: `"string"`, `"number"`, `"integer"`, `"boolean"`, `"object"`, `"array"`.
+  - Array shorthand: `"string[]"`, `"number[]"` → `{type: "array", items: {type: "string/number"}}`.
+  - `on_missing="null"` → types are `["T", "null"]` (nullable); `"omit"` / `"error"` → strict `"T"`.
+  - Unknown type strings → `{}` (no constraint — forward-compatible, not silently lossy).
+- **`_build_projection_schema(config)`** assembles the full projected record schema:
+  - `properties` for every FieldSpec (`path` → type schema).
+  - `required` list for specs with `required=True` and `on_missing != "omit"`.
+  - Adds `overall_confidence` (number, [0,1]) when `include_confidence=True`.
+  - Adds `provenance` (array) when `include_provenance=True`.
+  - Does NOT use `additionalProperties: false` to avoid rejecting records with future metadata keys.
+- **`validate_projection(candidate_id, projected, config)`** runs `jsonschema.validate` against the generated schema and raises `ProjectionValidationError` on failure, with a clean `"field > key"` path in the reason string.
+
+### Config files
+- **`configs/default_config.json`** — mirrors the full canonical schema; all 10 data fields included (no renaming), `include_confidence=true`, `include_provenance=true`, `on_missing="null"`.
+- **`configs/example_custom_config.json`** — exactly the assignment example from §14: `full_name` (required), `primary_email` from `emails[0]` (required), `phone` from `phones[0]` with `normalize="E164"`, `skills` from `skills[].name` with `normalize="canonical"`. `include_confidence=true`, `include_provenance=false`, `on_missing="null"`.
+
+### Smoke-tested end-to-end
+- Default config: all 7 candidates projected and validated cleanly; `provenance` present, `overall_confidence` present.
+- Custom config: field renaming (`primary_email` ← `emails[0]`), list-projection (`skills[].name`), E.164 phone normalization, and canonical skill normalization all verified on real sample data (e.g. Jane Doe: `phone=+14155550142`, `skills=["Python","AWS","PostgreSQL",...]`).
+- `on_missing` policies: `null` (missing fields → `None`), `omit` (missing fields → key absent), `error` (raises `ProjectionValidationError`) all verified.
+- `validate_projection` required-field check: confirmed raises `ProjectionValidationError` when a required field is absent from the projected dict.
+
+**Files modified/created:**
+- `src/transformer/projection.py` (overwriting Phase 1 stub)
+- `src/transformer/validate.py` (replacing the `validate_projection` stub from Phase 6)
+- `configs/default_config.json` [NEW]
+- `configs/example_custom_config.json` [NEW]
+
+**Implementation notes / deviations:**
+- No deviations from §14/§15 of the design doc.
+- `project_all` returns `(results, errors)` tuple (not just `list[dict]`) — a small addition over the stub signature, necessary so the pipeline can collect per-candidate errors without try/except wrapping every call. This is consistent with Phase 8's error-collection pattern.
+- No tests/ folder per project instruction change (live demo instead of automated tests).
+- The `_comment` key in both JSON config files is an informal annotation (not a FieldSpec) and is ignored by `OutputConfig.from_dict` (which only reads `fields`, `include_confidence`, `include_provenance`, `on_missing`) — confirmed this does not interfere with loading.
 
 ---
 

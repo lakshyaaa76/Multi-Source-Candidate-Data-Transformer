@@ -1,0 +1,31 @@
+{
+  "_comment": "example_custom_config.json — the assignment's example output config (PROJECT_CONTEXT.md §14). Demonstrates field renaming (primary_email from emails[0]), list-projection (skills from skills[].name), normalize overrides, and selective field inclusion without provenance.",
+  "fields": [
+    {
+      "path": "full_name",
+      "type": "string",
+      "required": true
+    },
+    {
+      "path": "primary_email",
+      "from": "emails[0]",
+      "type": "string",
+      "required": true
+    },
+    {
+      "path": "phone",
+      "from": "phones[0]",
+      "type": "string",
+      "normalize": "E164"
+    },
+    {
+      "path": "skills",
+      "from": "skills[].name",
+      "type": "string[]",
+      "normalize": "canonical"
+    }
+  ],
+  "include_confidence": true,
+  "include_provenance": false,
+  "on_missing": "null"
+}

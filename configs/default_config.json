@@ -1,0 +1,18 @@
+{
+  "_comment": "default_config.json — mirrors the full canonical schema. All fields included, no renaming, full confidence + provenance metadata. Use this config to get the complete canonical output for all candidates.",
+  "fields": [
+    { "path": "full_name",         "type": "string",  "required": false },
+    { "path": "emails",            "type": "string[]", "required": false },
+    { "path": "phones",            "type": "string[]", "required": false },
+    { "path": "location",          "type": "object",  "required": false },
+    { "path": "links",             "type": "object",  "required": false },
+    { "path": "headline",          "type": "string",  "required": false },
+    { "path": "years_experience",  "type": "number",  "required": false },
+    { "path": "skills",            "type": "array",   "required": false },
+    { "path": "experience",        "type": "array",   "required": false },
+    { "path": "education",         "type": "array",   "required": false }
+  ],
+  "include_confidence": true,
+  "include_provenance": true,
+  "on_missing": "null"
+}
