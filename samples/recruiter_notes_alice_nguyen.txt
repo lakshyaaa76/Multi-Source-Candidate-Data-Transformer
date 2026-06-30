@@ -1,0 +1,7 @@
+Notes - Alice Nguyen (referred by Priya)
+
+Really strong accessibility background. Talked through her work at Bright
+Path Software building out their internal accessibility linting toolchain in
+TypeScript/React. Mentioned she also does some freelance Node.js/GraphQL
+contract work on the side. Best contact is alice.nguyen.dev@example.com,
+cell is +1 503 555 0177. Based in Portland, OR.

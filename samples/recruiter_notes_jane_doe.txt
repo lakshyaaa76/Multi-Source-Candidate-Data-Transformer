@@ -1,0 +1,10 @@
+Call notes - Jane Doe - 2026-06-18
+
+Spoke with Jane for 30 min. Currently at Initech as a Senior Backend Engineer,
+seems very happy there but open to hearing about Staff-level roles. Confirmed
+email jane.doe@example.com works best, also reachable at 415-555-0142.
+
+She mentioned she's been doing a lot of Kubernetes and some light Terraform
+work lately on top of the usual Python/Go stack. Strong communicator.
+
+Based in SF, would consider remote-first orgs only.

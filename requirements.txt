@@ -1,0 +1,4 @@
+pdfplumber>=0.11
+phonenumbers>=8.13
+jsonschema>=4.21
+pytest>=8.0

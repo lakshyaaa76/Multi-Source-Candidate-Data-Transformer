@@ -1,0 +1,38 @@
+{
+  "export_date": "2026-06-20",
+  "candidates": [
+    {
+      "candidate_name": "Jane Doe",
+      "contact_email": "jane.doe@example.com",
+      "mobile_number": "415-555-0142",
+      "employer": "Initech",
+      "job_title": "Senior Backend Engineer",
+      "city": "San Francisco",
+      "state": "CA",
+      "country_name": "United States",
+      "skill_tags": ["Python", "AWS", "postgres", "Docker"]
+    },
+    {
+      "candidate_name": "John Smith",
+      "contact_email": "john.smith@example.com",
+      "mobile_number": "212-555-0199",
+      "employer": "Soylent Corp",
+      "job_title": "Senior Product Manager",
+      "city": "New York",
+      "state": "NY",
+      "country_name": "United States",
+      "skill_tags": ["Roadmapping", "SQL", "A/B Testing"]
+    },
+    {
+      "candidate_name": "",
+      "contact_email": "ats.only.noname@example.com",
+      "mobile_number": "not-a-real-number",
+      "employer": "Unknown",
+      "job_title": "Unknown",
+      "city": null,
+      "state": null,
+      "country_name": null,
+      "skill_tags": []
+    }
+  ]
+}

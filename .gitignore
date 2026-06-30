@@ -1,0 +1,44 @@
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+.env
+.env.*
+
+# Distribution / packaging
+.build/
+dist/
+build/
+.eggs/
+*.egg-info/
+*.egg
+
+# Pytest cache
+.pytest_cache/
+
+# IDE/editor settings
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Jupyter notebooks
+.ipynb_checkpoints/
+
+# Logs and temporary files
+debug.log
+*.log
+*.tmp
+*.temp
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Output and generated content
+output/

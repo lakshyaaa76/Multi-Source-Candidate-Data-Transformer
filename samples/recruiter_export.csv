@@ -1,0 +1,6 @@
+name,email,phone,current_company,title
+Jane Doe,jane.doe@example.com,+1 415 555 0142,Initech,Senior Backend Engineer
+John Smith,john.smith@example.com,(212) 555-0199,Globex Corp,Product Manager
+Bob Lee,bob.lee.sf@example.com,+1 628 555 0110,Stark Industries,Data Analyst
+Bob Lee,bob.lee.nyc@example.com,+1 917 555 0133,Wayne Enterprises,Marketing Coordinator
+,missing.name@example.com,+1 555 555 0100,No Name Co,Intern
