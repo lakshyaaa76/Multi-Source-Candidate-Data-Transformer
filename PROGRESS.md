@@ -401,15 +401,64 @@
 ---
 
 ## Phase 8 — Pipeline orchestration + CLI
-**Status: Not Started**
-- `pipeline.py`: wires loaders → parse → normalize → group → merge → validate →
-  project → validate, collecting per-source and per-candidate errors instead of
-  crashing.
-- `cli.py`: argparse — input source paths/dirs, `--config`, `--output`.
-- `README.md`: run instructions + example commands.
+**Status: Completed**
 
-**Files expected:** `src/transformer/pipeline.py`, `src/transformer/cli.py`,
-`README.md`.
+### `pipeline.py`
+- Implemented a `Pipeline` class that wires all 7 stages in sequence, with structured non-fatal error collection at every step:
+  1. **Load** — calls `loader.load(path)` per source; `ok=False` → `SourceError`, run continues.
+  2. **Parse** — calls `loader.parse(result)` per successful load; exceptions caught as `SourceError`.
+  3. **Group** — `identity.group_records(partial_records)`.
+  4. **Merge** — `merge.merge_all(grouped)`.
+  5. **Validate canonical** — `validate.validate_canonical(rec)` per record; `CanonicalValidationError` → `CandidateError`, record skipped.
+  6. **Project** — `projection.project_record(rec, config)` per record; `ProjectionValidationError` (from `on_missing="error"`) → `CandidateError`, record skipped.
+  7. **Validate output** — `validate.validate_projection(cid, projected, config)` per record; failure → `CandidateError`, record skipped.
+- `PipelineReport` dataclass holds: `candidates` (projected dicts), `source_errors`, `candidate_errors`, `partial_records_loaded`, `canonical_records_merged` — all non-raising, structured for clean CLI reporting.
+- `Pipeline.run(sources)` takes `list[(path, source_type)]`; `source_type` must be one of the known keys (`"csv"`, `"ats_json"`, `"resume_pdf"`, `"recruiter_notes"`).
+- `Pipeline.from_files(file_paths, config)` convenience classmethod — infers `source_type` from extension (`.csv` / `.json` / `.pdf` / `.txt`); unknown extensions logged as `SourceError` rather than raising.
+- `infer_source_type(path)` utility exported for CLI use.
+- Source routing via `_LOADERS` dict and `_EXT_TO_SOURCE_TYPE` — adding a new source type only requires updating these two dicts.
+
+### `cli.py`
+- `argparse` entrypoint, runnable as `python -m transformer.cli`.
+- **Source flags**: `--csv`, `--ats`, `--pdf`, `--notes` (one or more files each); or `--files` for extension-inferred batch.
+- **`--config FILE`**: path to `OutputConfig` JSON; defaults to `configs/default_config.json` relative to CWD if present.
+- **`--output FILE`**: write JSON to file instead of stdout; creates parent directories as needed.
+- **`--no-metadata`**: suppress `run_metadata` block from output JSON (for clean downstream piping).
+- **`--indent N`**: JSON indentation level (default 2).
+- **`--verbose` / `-v`**: enable DEBUG logging to stderr.
+- Output format: `{"candidates": [...], "run_metadata": {...}}` — `run_metadata` always includes `source_errors` and `candidate_errors` arrays for transparency.
+- Exit code: `0` on success (even with partial errors, as long as ≥1 candidate produced); `1` when no candidates produced and errors were reported (i.e. every source failed).
+- Summary line always printed to stderr: `Done: N candidate(s) in output, M source error(s)`.
+
+### `README.md`
+- Full rewrite from the Phase 1 placeholder.
+- Setup instructions (venv, pip install).
+- PowerShell and bash PYTHONPATH instructions.
+- Complete CLI usage table + all flag descriptions.
+- Example commands: default config to file, custom config to file, stdout / `--no-metadata`, `--files` extension-inferred, graceful degradation with malformed inputs.
+- Output format documentation with annotated JSON sample.
+- Config authoring guide with field reference table.
+- Project structure tree.
+- Design highlights table (graceful degradation, provenance, confidence scoring, conflict resolution, identity grouping, config-driven projection, output validation).
+
+### End-to-end verified
+- Default config, all sample sources → 7 candidates in `output/default_run.json`, 0 errors.
+- Custom config (example_custom_config.json) → 7 candidates in `output/custom_run.json`, renaming/list-projection/E.164/canonical normalization all correct.
+- Malformed-sources run (malformed CSV + malformed JSON + no-text PDF) → 0 candidates, 3 source errors logged to stderr, exit code 1, no crash.
+- CLI `--no-metadata` stdout → clean JSON without `run_metadata` block.
+
+**Files modified/created:**
+- `src/transformer/pipeline.py` (overwriting Phase 1 stub)
+- `src/transformer/cli.py` (overwriting Phase 1 stub)
+- `README.md` (overwriting Phase 1 placeholder)
+- `output/default_run.json` [NEW — generated artifact]
+- `output/custom_run.json` [NEW — generated artifact]
+
+**Implementation notes / deviations:**
+- No deviations from §4/§5 of the design doc.
+- `Pipeline` is a class rather than a plain function — consistent with the design doc's wording ("a single `Pipeline` class wires the stages") and allows subclassing / dependency injection for future extension.
+- The `Optional` import in `cli.py` is placed inline after the function that uses it (due to the forward-reference nature of `_write_output`'s signature); this is a cosmetic issue with no functional impact.
+- No tests/ folder per project instruction change (live demo instead of automated tests).
 
 ---
 
