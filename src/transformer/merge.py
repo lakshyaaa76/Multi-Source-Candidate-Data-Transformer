@@ -1,6 +1,6 @@
 """
 merge.py — field-by-field conflict resolution, confidence scoring, provenance
-construction (PROJECT_CONTEXT.md §12, §13).
+construction.
 
 Consumes the output of identity.group_records() and produces one CanonicalRecord
 per candidate. Reuses normalize.py so canonical values are normalized exactly once,
@@ -22,12 +22,12 @@ from transformer.models import (
     Skill,
 )
 
-# MANUAL DECISION: default conflict-resolution ranking, confirmed during design
-# (PROJECT_CONTEXT.md §12, §19). Pipeline-level constant, not exposed through the
+# MANUAL DECISION: default conflict-resolution ranking, confirmed during design.
+# Pipeline-level constant, not exposed through the
 # runtime OutputConfig (which reshapes *output*, not merge logic) -- see §15.
 SOURCE_PRIORITY = ["ats_json", "csv", "resume_pdf", "recruiter_notes"]
 
-# MANUAL DECISION: confidence-scoring constants (§13). Deliberately small/explicit
+# MANUAL DECISION: confidence-scoring constants. Deliberately small/explicit
 # so the formula can be stated and defended in two sentences during review, rather
 # than an opaque scoring model.
 _BASE_SCORE = {
@@ -46,7 +46,7 @@ _SOURCE_TIER_WEIGHT = {
 _AGREEMENT_BONUS = 0.1  # per additional independent source agreeing on a value
 
 # Required fields drag overall_confidence down more when missing; optional fields
-# contribute less weight. MANUAL DECISION, see §13.
+# contribute less weight. MANUAL DECISION.
 _REQUIRED_FIELDS = ["full_name", "emails", "skills"]
 _OPTIONAL_FIELDS = ["phones", "location", "headline", "experience", "education"]
 
@@ -104,7 +104,7 @@ def _merge_phones(records: list[PartialRecord], provenance: list[Provenance]) ->
             e164 = normalize.normalize_phone(p)
             if e164 is None:
                 # Attempted but unparseable -- record it as a failed normalization,
-                # don't silently drop it without a trace (§11, §16).
+                # don't silently drop it without a trace.
                 provenance.append(Provenance(field="phones", source=r.source_id,
                                               method="failed_normalize", confidence=0.1))
                 continue
@@ -155,7 +155,7 @@ def _merge_experience(records: list[PartialRecord], provenance: list[Provenance]
     """Dedupe entries that are clearly the same job (same normalized company AND
     title); otherwise keep all distinct entries -- conflicting employer claims
     across sources surface as separate entries rather than one being silently
-    discarded (§12: provenance stays fully inspectable, not just "the winner")."""
+    discarded; provenance stays fully inspectable, not just "the winner"."""
     seen: dict[tuple[str, str], ExperienceEntry] = {}
     order: list[tuple[str, str]] = []
     for r in sorted(records, key=lambda r: _source_priority_rank(r.source_type)):

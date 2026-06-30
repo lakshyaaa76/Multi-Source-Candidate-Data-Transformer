@@ -2,9 +2,9 @@
 resume_pdf_loader.py — Resume PDF (unstructured source).
 
 Uses pdfplumber for text extraction. Single-column, text-based resumes only -- no
-OCR, no multi-column layout parsing (see PROJECT_CONTEXT.md §9, §15 scope cuts).
+OCR, no multi-column layout parsing.
 A PDF with near-zero extractable text (e.g. a scanned image) is detected and the
-whole source is marked ok=False rather than silently returning garbage (§16).
+whole source is marked ok=False rather than silently returning garbage.
 """
 
 from __future__ import annotations
@@ -83,7 +83,7 @@ def parse(result: LoadResult) -> list[PartialRecord]:
     methods: dict = {}
     rec = PartialRecord(source_id=result.source_id, source_type="resume_pdf")
 
-    # Name: first non-empty line of the document, by convention (§9 assumption).
+    # Name: first non-empty line of the document, by convention.
     if header_lines:
         rec.full_name = header_lines[0]
         methods["full_name"] = "heuristic"

@@ -1,5 +1,5 @@
 """
-validate.py — schema validation for pipeline outputs (PROJECT_CONTEXT.md §15).
+validate.py — schema validation for pipeline outputs.
 
 Two validation passes (both via jsonschema):
 
@@ -180,7 +180,7 @@ _CANONICAL_SCHEMA: dict = {
             "type": "number",
             "minimum": 0.0,
             "maximum": 1.0,
-            "description": "Weighted average of per-field confidences (§13)",
+            "description": "Weighted average of per-field confidences",
         },
     },
 }
@@ -385,7 +385,7 @@ def validate_projection(candidate_id: str, projected: dict, config) -> None:
 
     Builds a JSON Schema on the fly from `config.fields[].type` + `required` flags,
     then runs `jsonschema.validate` on `projected`.  This satisfies the design
-    requirement (§15) that every projected record is validated against "the schema
+    requirement that every projected record is validated against "the schema
     implied by the OutputConfig" before being returned — auto-generated, not
     hand-maintained.
 

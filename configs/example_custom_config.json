@@ -1,5 +1,5 @@
 {
-  "_comment": "example_custom_config.json — the assignment's example output config (PROJECT_CONTEXT.md §14). Demonstrates field renaming (primary_email from emails[0]), list-projection (skills from skills[].name), normalize overrides, and selective field inclusion without provenance.",
+  "_comment": "example_custom_config.json — the assignment's example output config. Demonstrates field renaming (primary_email from emails[0]), list-projection (skills from skills[].name), normalize overrides, and selective field inclusion without provenance.",
   "fields": [
     {
       "path": "full_name",

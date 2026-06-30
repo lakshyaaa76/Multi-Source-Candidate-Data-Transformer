@@ -1,7 +1,7 @@
 """
 recruiter_notes_loader.py — Recruiter notes .txt (unstructured, free text).
 
-Lowest-confidence source tier (§9, §13): regex for email/phone if present, light
+Lowest-confidence source tier: regex for email/phone if present, light
 keyword matching against a small known-skills list. We bias toward extracting
 little-but-correct over a lot-but-guessed, per the brief's "wrong-but-confident is
 worse than honestly-empty" principle -- e.g. we do NOT attempt to guess a current
@@ -50,8 +50,7 @@ def load(path: str) -> LoadResult:
         return LoadResult(ok=False, source_id=source_id, source_type="recruiter_notes",
                            error=f"failed to read file: {exc}")
 
-    # An empty file is "ok, nothing to contribute" -- not an error (§16 distinguishes
-    # empty from malformed).
+    # An empty file is "ok, nothing to contribute" -- not an error.
     return LoadResult(ok=True, source_id=source_id, source_type="recruiter_notes", data=text)
 
 

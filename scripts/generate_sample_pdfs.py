@@ -82,8 +82,8 @@ john_smith = [
 ]
 
 # Alice Nguyen exists ONLY in unstructured sources (resume + notes) -- no CSV/ATS row --
-# to exercise "candidate with no structured source at all" (PROJECT_CONTEXT.md §16).
-alice_nguyen = [
+# to exercise "candidate with no structured source at all".
+alice_nguyen = [},{},{
     "Alice Nguyen",
     "alice.nguyen.dev@example.com | +1 503 555 0177 | Portland, OR, USA",
     "github.com/anguyen-dev",

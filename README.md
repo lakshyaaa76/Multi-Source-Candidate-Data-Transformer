@@ -170,7 +170,7 @@ python -m transformer.cli [--csv FILE...] [--ats FILE...] [--pdf FILE...] [--not
 
 | Flag | Default | Description |
 |---|---|---|
-| `--config FILE` | `configs/default_config.json` | Output projection config (see §14 of `PROJECT_CONTEXT.md`) |
+| `--config FILE` | `configs/default_config.json` | Output projection config (see `PROJECT_CONTEXT.md`) |
 | `--output FILE` | stdout | Write JSON to a file instead of printing |
 | `--no-metadata` | off | Suppress the `run_metadata` block from output |
 | `--indent N` | `2` | JSON indentation level |
@@ -279,7 +279,7 @@ python -m transformer.cli `
 Mirrors the full canonical schema: all fields, full provenance + confidence metadata, no field renaming.
 
 ### `configs/example_custom_config.json`
-The assignment example from the design brief (`PROJECT_CONTEXT.md §14`): selective fields, renaming, normalize overrides, provenance suppressed.
+The assignment example from the design brief : selective fields, renaming, normalize overrides, provenance suppressed.
 
 ### Writing your own config
 

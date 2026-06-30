@@ -1,7 +1,7 @@
 """
 csv_loader.py — Recruiter CSV export (structured source).
 
-Implements §9 of PROJECT_CONTEXT.md: load() returns a uniform LoadResult and never
+Implements §9: load() returns a uniform LoadResult and never
 raises; parse() turns the raw rows into PartialRecords using direct column->field
 mapping. Per-row degradation: a row with neither name nor email is unusable and is
 skipped (noted, not raised); a row missing only one of them is still parsed as far
@@ -22,7 +22,7 @@ from transformer.models import (
 
 # Recognized header columns for this source. If none of these appear in the file's
 # header row, we treat the file as having no real header (malformed) rather than
-# guessing at columns -- this is the "missing header" malformed-file case (§16).
+# guessing at columns -- this is the "missing header" malformed-file case.
 EXPECTED_COLUMNS = {"name", "email", "phone", "current_company", "title"}
 
 

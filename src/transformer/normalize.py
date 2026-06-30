@@ -1,5 +1,5 @@
 """
-normalize.py — shared normalization library (PROJECT_CONTEXT.md §11).
+normalize.py — shared normalization library.
 
 One function per concern, reused in two places: by merge.py when building the
 canonical record, and by projection.py when a runtime OutputConfig requests a
@@ -23,7 +23,7 @@ from transformer.models import Location
 # ---------------------------------------------------------------------------
 # MANUAL DECISION: default phone region fallback.
 # Used only when a phone number has no country code and no location/country is
-# otherwise inferable for that candidate. Documented in PROJECT_CONTEXT.md §17 as
+# otherwise inferable for that candidate. Documented in §17 as
 # an assumption; surfaced again here since it directly affects parsing correctness
 # and is the kind of default a reviewer should be able to spot and challenge.
 # ---------------------------------------------------------------------------
@@ -112,7 +112,7 @@ def normalize_date(raw: Optional[str]) -> Optional[str]:
 
 # MANUAL DECISION: seed alias table, intentionally small (~30 entries) and focused
 # on the skills that actually appear in our sample fixtures plus a few common
-# adjacent ones, not an exhaustive industry taxonomy (see PROJECT_CONTEXT.md §17).
+# adjacent ones, not an exhaustive industry taxonomy (see §17).
 # Anything not in this table passes through title-cased rather than being dropped,
 # since the skills vocabulary is open-ended and a real skill missing from our seed
 # list is still more useful than no skill at all.

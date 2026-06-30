@@ -1,5 +1,5 @@
 """
-identity.py — cross-source candidate grouping/dedup (PROJECT_CONTEXT.md §10).
+identity.py — cross-source candidate grouping/dedup.
 
 Deterministic, explainable grouping rather than fuzzy/ML matching, per the design's
 explicit scope cut: email match, then phone match, then a guarded name-only fallback
@@ -113,7 +113,7 @@ def group_records(records: list[PartialRecord]) -> dict[str, list[PartialRecord]
 
     clusters = _clusters()
 
-    # Name-only fallback for identity-less clusters (§10 step 3).
+    # Name-only fallback for identity-less clusters.
     name_to_identity_roots: dict[str, set[int]] = defaultdict(set)
     for root, idxs in clusters.items():
         has_identity = any(records[i].emails or records[i].phones for i in idxs)

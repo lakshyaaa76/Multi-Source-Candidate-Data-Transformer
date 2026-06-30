@@ -1,5 +1,5 @@
 """
-cli.py — argparse entrypoint for the candidate transformer (PROJECT_CONTEXT.md §5).
+cli.py — argparse entrypoint for the candidate transformer.
 
 A thin wrapper around Pipeline: parses arguments, loads the OutputConfig, runs
 the pipeline, and writes results to stdout or a file.

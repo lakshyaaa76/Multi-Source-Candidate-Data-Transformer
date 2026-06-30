@@ -1,5 +1,5 @@
 """
-projection.py — config-driven projection engine (PROJECT_CONTEXT.md §14).
+projection.py — config-driven projection engine.
 
 Takes a CanonicalRecord + OutputConfig and produces a plain dict whose shape is
 entirely determined by the config — no hardcoded output schema.  Pure, side-effect-
@@ -16,7 +16,7 @@ Key capabilities implemented here (per §14):
       * list projection         ("skills[].name")
       * nested key access       ("location.city")
   - Per-field `normalize` override, reusing the shared normalize.py library so
-    canonical and projected normalization never drift (§11 / §5).
+    canonical and projected normalization never drift.
   - `on_missing` policy: "null" | "omit" | "error".
   - `include_confidence` / `include_provenance` top-level toggles.
 """

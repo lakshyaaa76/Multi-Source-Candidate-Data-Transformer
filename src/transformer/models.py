@@ -1,8 +1,7 @@
 """
 Core data models for the candidate data transformer.
 
-These dataclasses are the contract between pipeline stages (see PROJECT_CONTEXT.md
-§4 High-Level Pipeline and §8 Canonical Data Model). Keeping them in one module avoids
+These dataclasses are the contract between pipeline stages (see §4 High-Level Pipeline and §8 Canonical Data Model). Keeping them in one module avoids
 drift between what loaders produce, what merge consumes, and what projection reads.
 
 Design notes:
@@ -86,7 +85,7 @@ class EducationEntry:
 # ---------------------------------------------------------------------------
 
 # How a field's value was obtained. "failed_normalize" marks a value that was
-# attempted but dropped because it couldn't be normalized (see PROJECT_CONTEXT.md §11),
+# attempted but dropped because it couldn't be normalized (see §11),
 # kept distinct from "merged" so reviewers can tell a clean merge from a lossy one.
 ExtractionMethod = Literal["direct", "regex", "heuristic", "merged", "failed_normalize"]
 

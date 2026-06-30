@@ -14,16 +14,16 @@
 
 ## Phase 1 — Project scaffolding & data models
 **Status: Completed**
-- Created folder structure per §6 (`configs/`, `samples/`, `src/transformer/loaders/`,
+- Created folder structure (`configs/`, `samples/`, `src/transformer/loaders/`,
   `tests/`, `output/`).
 - `requirements.txt` added (pdfplumber, phonenumbers, jsonschema, pytest).
-- `models.py` implemented with all dataclasses from §8 plus a couple of supporting
+- `models.py` implemented with all dataclasses plus a couple of supporting
   ones not spelled out in the design doc but implied by it:
   - `Location`, `Links`, `Skill`, `ExperienceEntry`, `EducationEntry` — small typed
     sub-structures instead of raw dicts, each with `to_dict()`.
   - `Provenance` (field/source/method/confidence) — added `failed_normalize` as an
     explicit `ExtractionMethod` value (alongside `direct`/`regex`/`heuristic`/`merged`)
-    so a value that was attempted-but-dropped during normalization (§11, §16) is
+    so a value that was attempted-but-dropped during normalization is
     distinguishable in provenance from a clean merge.
   - `PartialRecord` — mirrors `CanonicalRecord`'s shape, all fields optional, tagged
     with `source_id`/`source_type`, plus an `extraction_methods` dict so each
@@ -32,10 +32,10 @@
   - `CanonicalRecord` — matches the assignment's default schema; `to_dict()` produces
     the final nested JSON shape (used directly for the default-schema output path).
   - `LoadResult` — uniform `{ok, source_id, source_type, data, error}` contract every
-    loader will return, per §9, so the pipeline can treat all four source types
+    loader will return, so the pipeline can treat all four source types
     uniformly and skip a failed source without raising.
   - `OutputConfig` / `FieldSpec` — typed representation of the runtime projection
-    config from §14 (`path`, `from`, `type`, `required`, `normalize`,
+    config (`path`, `from`, `type`, `required`, `normalize`,
     `include_confidence`, `include_provenance`, `on_missing`), with `from_dict()`
     constructors so `projection.py` can build these directly from the JSON config
     files in Phase 7.
@@ -54,7 +54,7 @@
 `configs/`, `samples/`, `tests/`, `output/` directories.
 
 **Implementation notes / no deviations from design:**
-- All dataclass field names match §8's table exactly; no renames.
+- All dataclass field names match the schema table exactly; no renames.
 - `Location`/`Links`/`Skill`/`ExperienceEntry`/`EducationEntry` as separate dataclasses
   (rather than raw dicts, as §8's pseudocode loosely implied) is a clarification, not a
   deviation — `to_dict()` on each still serializes to exactly the dict shapes shown in
@@ -73,7 +73,7 @@
 **Status: Completed**
 - Authored synthetic fixtures covering 4 candidates + several deliberately broken files,
   exceeding the original plan of "2–3 candidates" since the extra cases were cheap to add
-  and each maps directly to an edge case in §16:
+  and each maps directly to an edge case:
   - **Jane Doe** — present in all 4 sources, consistent identity, values agree (happy
     path); skills given in different casings across sources to test canonicalization.
   - **John Smith** — present in all 4 sources with a deliberate **3-way conflicting**
@@ -142,7 +142,7 @@
     experience/education/skills via positional/heuristic rules matched to our sample
     resume format.
   - **`recruiter_notes_loader.py`** — plain text read; empty file is `ok=True` with
-    empty data (not an error, per §16's empty-vs-malformed distinction). `parse()`
+    empty data (not an error, per the empty-vs-malformed distinction). `parse()`
     does regex email/phone extraction plus keyword matching against a small known-skills
     list (`KNOWN_SKILLS`), deliberately not attempting to guess company/title from free
     text, per the brief's "wrong-but-confident is worse than honestly-empty" principle.
@@ -174,7 +174,7 @@
 
 ## Phase 4 — Normalization library
 **Status: Completed**
-- Implemented `normalize.py` with one function per concern (§11), each returning
+- Implemented `normalize.py` with one function per concern, each returning
   `None` for anything unparseable rather than guessing a value:
   - `normalize_phone()` — via `phonenumbers`; default region fallback `"US"`
     (`DEFAULT_PHONE_REGION`) when no country is otherwise known.
@@ -210,13 +210,13 @@
 4. Country lookup table is a small hand-rolled dict, not a full ISO-3166 dataset
    (no network access to pull one).
 5. Used a hand-rolled date parser instead of adding `dateutil` as a project dependency,
-   to avoid drifting from the dependency list agreed in `PROJECT_CONTEXT.md` §7.
+   to avoid drifting from the dependency list agreed in `PROJECT_CONTEXT.md`.
 
 ---
 
 ## Phase 5 — Identity grouping + merge engine
 **Status: Completed**
-- **`identity.py`** — deterministic candidate grouping per §10, implemented as a
+- **`identity.py`** — deterministic candidate grouping, implemented as a
   union-find over all `PartialRecord`s:
   - Pass 1/2: union records sharing a normalized email key or a loose
     digits-only phone key (last 10 digits, so differing formatting/punctuation
@@ -228,7 +228,7 @@
     share a name.
   - `candidate_id` generated deterministically as `{slugified-name}-{6-char hash of
     sorted source_ids}`.
-- **`merge.py`** — field-by-field conflict resolution and confidence scoring (§12,
+- **`merge.py`** — field-by-field conflict resolution and confidence scoring
   §13):
   - `SOURCE_PRIORITY = [ats_json, csv, resume_pdf, recruiter_notes]` used to pick
     winners for scalar fields (`full_name`, `location`, `headline`) and to order
@@ -330,7 +330,7 @@
 **Files modified:** `src/transformer/validate.py` (overwriting the Phase 1 stub).
 
 **Implementation notes / deviations:**
-- No deviations from the design (§15). All behaviours described there are implemented.
+- No deviations from the design. All behaviours described there are implemented.
 - The `→` Unicode arrow in error-message path strings was replaced with plain ASCII
   `>` to avoid `cp1252` encoding errors when printing on Windows consoles —
   cosmetic-only change, does not affect error content or structure.

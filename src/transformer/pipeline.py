@@ -1,5 +1,5 @@
 """
-pipeline.py — end-to-end orchestration (PROJECT_CONTEXT.md §4, §5).
+pipeline.py — end-to-end orchestration.
 
 The Pipeline class wires every stage in order:
   1. Load   — one LoadResult per source file (never raises; ok=False on failure)
@@ -12,7 +12,7 @@ The Pipeline class wires every stage in order:
 
 Failures at every stage are collected into a structured PipelineReport rather
 than raising — consistent with the design principle "degrade gracefully on a
-missing/garbage source" (§5).  The CLI then decides how to surface the report.
+missing/garbage source".  The CLI then decides how to surface the report.
 """
 
 from __future__ import annotations
