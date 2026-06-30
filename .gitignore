@@ -46,3 +46,6 @@ output/
 # Local project notes
 PROGRESS.md
 PROJECT_CONTEXT.md
+
+# Local scripts and fixtures
+scripts/
