@@ -118,25 +118,19 @@ def _build_parser() -> argparse.ArgumentParser:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Source file arguments (specify at least one):
+  --dir  scans a directory for .csv/.json/.pdf/.txt files (no recursion).
   --csv, --ats, --pdf, --notes accept one or more file paths each.
-  --files accepts any mix; source type is inferred from the file extension
-          (.csv, .json, .pdf, .txt).
+  --files accepts any mix; source type is inferred from the file extension.
 
 Examples:
-  # Default config, print to stdout:
-  python -m transformer.cli \\
-    --csv samples/recruiter_export.csv \\
-    --ats samples/ats_blob.json \\
-    --pdf samples/resume_jane_doe.pdf \\
-    --notes samples/recruiter_notes_jane_doe.txt
+  # Scan the whole samples/ folder (shortest demo command):
+  python -m transformer.cli --dir samples/
 
-  # Custom config, write to file, suppress metadata:
-  python -m transformer.cli \\
-    --csv   samples/recruiter_export.csv \\
-    --ats   samples/ats_blob.json \\
-    --config configs/example_custom_config.json \\
-    --output output/custom_run.json \\
-    --no-metadata
+  # Custom config, write to file:
+  python -m transformer.cli --dir samples/ --config configs/example_custom_config.json --output output/demo.json
+
+  # Specific files only:
+  python -m transformer.cli --files samples/recruiter_export.csv samples/ats_blob.json
 """,
     )
 
@@ -155,7 +149,15 @@ Examples:
     parser.add_argument(
         "--files", nargs="+", metavar="FILE", default=[],
         help="Any source files; source type is inferred from extension "
-             "(.csv → csv, .json → ats_json, .pdf → resume_pdf, .txt → recruiter_notes).",
+             "(.csv -> csv, .json -> ats_json, .pdf -> resume_pdf, .txt -> recruiter_notes).",
+    )
+
+    # Scan an entire directory (non-recursive) — ideal for demos
+    parser.add_argument(
+        "--dir", nargs="+", metavar="DIR", default=[],
+        help="Scan DIR for source files (.csv, .json, .pdf, .txt); "
+             "source type is inferred from extension. Non-recursive. "
+             "Combine with --files/--csv/etc. for mixed runs.",
     )
 
     # Config
@@ -217,13 +219,23 @@ def main(argv: list[str] | None = None) -> int:
     for path in args.notes_files:
         sources.append((path, "recruiter_notes"))
 
-    # --files: infer types from extensions (handled inside from_files, but we
-    # need the typed list for the explicit flags above, so we separate the two)
-    inferred_sources = args.files  # list of paths; type inferred inside pipeline
+    # --files: infer types from extensions
+    inferred_sources = list(args.files)
+
+    # --dir: scan each directory for recognised file types (non-recursive)
+    for dir_path in args.dir:
+        if not os.path.isdir(dir_path):
+            print(f"Warning: --dir '{dir_path}' is not a directory, skipping.",
+                  file=sys.stderr)
+            continue
+        for entry in sorted(os.scandir(dir_path), key=lambda e: e.name):
+            if entry.is_file() and os.path.splitext(entry.name)[1].lower() in \
+                    {".csv", ".json", ".pdf", ".txt"}:
+                inferred_sources.append(entry.path)
 
     if not sources and not inferred_sources:
         parser.error(
-            "No source files specified. Use --csv, --ats, --pdf, --notes, or --files."
+            "No source files specified. Use --dir, --files, --csv, --ats, --pdf, or --notes."
         )
 
     # Load config
