@@ -26,8 +26,9 @@ from transformer.models import Location
 # otherwise inferable for that candidate. Documented in §17 as
 # an assumption; surfaced again here since it directly affects parsing correctness
 # and is the kind of default a reviewer should be able to spot and challenge.
+# Default changed to India (ISO alpha-2 `IN`) per request.
 # ---------------------------------------------------------------------------
-DEFAULT_PHONE_REGION = "US"
+DEFAULT_PHONE_REGION = "IN"
 
 
 def normalize_phone(raw: Optional[str], default_region: str = DEFAULT_PHONE_REGION) -> Optional[str]:

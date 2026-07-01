@@ -1,11 +1,11 @@
 """
 csv_loader.py — Recruiter CSV export (structured source).
 
-Implements §9: load() returns a uniform LoadResult and never
+Implements : load() returns a uniform LoadResult and never
 raises; parse() turns the raw rows into PartialRecords using direct column->field
 mapping. Per-row degradation: a row with neither name nor email is unusable and is
 skipped (noted, not raised); a row missing only one of them is still parsed as far
-as possible, per §16 ("one bad row inside an otherwise-good CSV -> skip that row,
+as possible,("one bad row inside an otherwise-good CSV -> skip that row,
 keep the rest" / degrade gracefully rather than drop everything).
 """
 
@@ -79,7 +79,7 @@ def parse(result: LoadResult) -> list[PartialRecord]:
             rec.emails = [email]
             methods["emails"] = "direct"
         if phone:
-            rec.phones = [phone]  # raw; E.164 normalization happens in merge (Phase 4/5)
+            rec.phones = [phone]
             methods["phones"] = "direct"
         if company or title:
             rec.experience = [ExperienceEntry(company=company or None, title=title or None)]

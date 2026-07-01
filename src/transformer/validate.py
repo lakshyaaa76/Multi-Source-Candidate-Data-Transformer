@@ -3,12 +3,12 @@ validate.py — schema validation for pipeline outputs.
 
 Two validation passes (both via jsonschema):
 
-1. validate_canonical (Phase 6) — sanity-checks a CanonicalRecord right after
+1. validate_canonical — sanity-checks a CanonicalRecord right after
    merge, before it reaches the projection layer. Catches bugs in our own pipeline
    (wrong types, missing candidate_id, confidence out of range, orphaned provenance
    references), NOT user input errors.
 
-2. validate_projection (Phase 7) — validates each projected dict against the
+2. validate_projection — validates each projected dict against the
    schema *derived from the OutputConfig itself*, enforcing required fields and
    declared types. Implemented in Phase 7.
 
